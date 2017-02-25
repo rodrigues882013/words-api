@@ -9,3 +9,6 @@ class Word(models.Model):
 
     def __unicode__(self):
         return str(self.word)
+
+    def get_word(self):
+        return self.__unicode__()

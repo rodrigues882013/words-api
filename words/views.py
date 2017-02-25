@@ -1,12 +1,15 @@
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework import mixins
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from words.models import Word
 from words.serializers import WordSerializer
+from words.services import WordService
 from words.constants import Constants
 
-from json import dumps
+from json import loads
 
 
 class WordDetail(mixins.RetrieveModelMixin,
@@ -41,67 +44,20 @@ class WordList(mixins.ListModelMixin,
         return self.create(request, *args, **kwargs)
 
 
-@csrf_exempt
-def distance(request, **kwargs):
-    kwargs['content_type'] = 'application/json'
+class Distance(APIView):
 
-    if request.method == Constants.HTTP_POST:
-        print kwargs
+    def post(self, request, format=None):
+        words = loads(request.body)
+        data = dict()
 
-    return dumps(dict(teste=1))
+        try:
+            w1 = words.get('word1')
+            w2 = words.get('word2')
+            distance = WordService.compute_distance(w1, w2)
+            data = dict(word1=w1, word2=w2, distance=distance)
 
-# class JSONResponse(HttpResponse):
-#
-#     def __init__(self, data, **kwargs):
-#         content = JSONRenderer().render(data)
-#         kwargs['content_type'] = 'application/json'
-#         super(JSONResponse, self).__init__(content, **kwargs)
-#
-#
-# @csrf_exempt
-# def get_all(request):
-#
-#     if request.method == Constants.HTTP_GET:
-#         words = Word.objects.all()
-#         serializer = WordSerializer(words, many=True)
-#         return JSONResponse(serializer.data)
-#
-#     else:
-#         return JSONResponse(dict("Bad Request"), tatus=404)
-#
-#
-# @csrf_exempt
-# def create(request):
-#
-#     if request.method == Constants.HTTP_POST:
-#
-#         data = JSONParser().parse(request)
-#         serializer = WordSerializer(data=data)
-#
-#         if serializer.is_valid():
-#             serializer.save()
-#             return JSONResponse(serializer.data)
-#         return JSONResponse(serializer.errors, status=400)
-#
-#
-# @csrf_exempt
-# def get(request, pk):
-#
-#     if request.method == Constants.HTTP_GET:
-#
-#         try:
-#             word = Word.objects.get(pk=pk)
-#         except Word.DoesNotExist:
-#             return HttpResponse(status=404)
-#
-#         serializer = WordSerializer(word)
-#         return JSONResponse(serializer.data)
-#
-#
-# @csrf_exempt
-# def distance(request, **kwargs):
-#
-#     if request.method == Constants.HTTP_POST:
-#         pass
-#
-#     return JSONResponse("")
+        except ValueError:
+            Response(dict(message="Bad Request"), status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data, status=status.HTTP_201_CREATED)
+

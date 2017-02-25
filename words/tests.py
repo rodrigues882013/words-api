@@ -1,9 +1,12 @@
-from django.test import TestCase
+import json
+
+from django.test import TestCase, Client
+
 from services import WordService
+from words.models import Word
 
 
-class WordServiceTest(TestCase):
-
+class WordServiceTestCase(TestCase):
     def setUp(self):
         self.longest_word_of_english = '''
                                 Methionylglutaminylarginyltyrosylglutamylserylleucylphenyl-
@@ -65,7 +68,6 @@ class WordServiceTest(TestCase):
         self.assertEqual(result, 0)
 
     def test_distance_between_words(self):
-
         result = WordService.compute_distance("abacate", "banana")
         self.assertEqual(result, 4)
 
@@ -85,11 +87,60 @@ class WordServiceTest(TestCase):
         self.assertEqual(result, 2682)
 
     def test_recursive(self):
-
         # This test show how recursive version can be unusual, see that for long strings this solution
         # is not usable in practical approach
         with self.assertRaises(RuntimeError):
             WordService.recursive_version(self.longest_word_of_english, self.other_long_word)
 
 
+class WordTestCase(TestCase):
+    def setUp(self):
+        Word.objects.create(word="banana")
+        Word.objects.create(word="cat")
 
+    def test_names(self):
+        w1 = Word.objects.get(word="banana")
+        w2 = Word.objects.get(word="cat")
+        self.assertEqual(w1.get_word(), 'banana')
+        self.assertEqual(w2.get_word(), 'cat')
+
+
+class WordEndPointTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        Word.objects.create(word="banana")
+        Word.objects.create(word="cat")
+
+    def test_list_words(self):
+        response = self.client.get('/words/')
+        content = response.content
+        words = [dict(word='banana', id=1), dict(word='cat', id=2)]
+
+        self.assertEqual('word' in content, True)
+        self.assertEqual('id' in content, True)
+        self.assertIsNotNone(words)
+        self.assertNotEqual(len(words), 0)
+        # self.assertEqual(json.dumps(content), words)
+
+    def test_create_word(self):
+        response = self.client.post(path='/words/',
+                                    data=json.dumps(dict(word='ball')),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+        obj = Word.objects.get(word='ball')
+
+        self.assertIsNotNone(obj)
+        self.assertEqual(obj.get_word(), 'ball')
+
+        # self.assertEqual(json.dumps(content), words)
+
+    def test_calcule_distance(self):
+        response = self.client.post(path='/words/distance/',
+                                    data=json.dumps(dict(word1='abacate', word2='banana')),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+
+        obj = json.loads(response.content)
+        self.assertEqual(obj.get('distance'), 4)
