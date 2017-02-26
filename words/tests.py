@@ -108,24 +108,27 @@ class WordTestCase(TestCase):
 class WordEndPointTestCase(TestCase):
     def setUp(self):
         self.client = Client()
+        self.auth_header = dict(HTTP_AUTHORIZATION="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjo0"
+                                                   "fQ.LvcApqSzzNsBJsUGretNjAHj_a6tpfpOEAE0PJHaH1g")
         Word.objects.create(word="banana")
         Word.objects.create(word="cat")
 
     def test_list_words(self):
-        response = self.client.get('/words/')
-        content = response.content
+        response = self.client.get('/api/v1/words/', **self.auth_header)
+
+        content = json.loads(response.content)
         words = [dict(word='banana', id=1), dict(word='cat', id=2)]
 
-        self.assertEqual('word' in content, True)
-        self.assertEqual('id' in content, True)
-        self.assertIsNotNone(words)
-        self.assertNotEqual(len(words), 0)
-        # self.assertEqual(json.dumps(content), words)
+        list_words = content.get('results')
+        self.assertIsNotNone(list_words)
+        self.assertNotEqual(len(list_words), 0)
+        self.assertEqual(list_words, words)
 
     def test_create_word(self):
-        response = self.client.post(path='/words/',
+        response = self.client.post(path='/api/v1/words/',
                                     data=json.dumps(dict(word='ball')),
-                                    content_type='application/json')
+                                    content_type='application/json',
+                                    **self.auth_header)
 
         self.assertEqual(response.status_code, 201)
         obj = Word.objects.get(word='ball')
@@ -136,9 +139,10 @@ class WordEndPointTestCase(TestCase):
         # self.assertEqual(json.dumps(content), words)
 
     def test_calcule_distance(self):
-        response = self.client.post(path='/words/distance/',
+        response = self.client.post(path='/api/v1/words/distance/',
                                     data=json.dumps(dict(word1='abacate', word2='banana')),
-                                    content_type='application/json')
+                                    content_type='application/json',
+                                    **self.auth_header)
 
         self.assertEqual(response.status_code, 201)
 

@@ -76,12 +76,16 @@ class AuthServices(object):
 
     @staticmethod
     def decode_token(token):
-        user = None
-        if token is not None:
-            claims = jwt.decode(token, 'secret', algorithms=['HS256'])
-            user = claims.get('user')
+        user_id = None
 
-        return user
+        try:
+            claims = jwt.decode(token, 'secret', algorithms=['HS256'])
+            user_id = claims.get('user')
+
+        except jwt.DecodeError:
+            pass
+
+        return user_id
 
     @staticmethod
     def auth(user):
@@ -119,6 +123,7 @@ def auth_jwt(function):
 
         token = None
         bearer = None
+        jwt_token = None
 
         if request.META.get('HTTP_AUTHORIZATION') is not None:
             token = request.META.get('HTTP_AUTHORIZATION')
@@ -126,12 +131,19 @@ def auth_jwt(function):
             token = request.META.get('AUTHORIZATION')
 
         if token is not None:
-            pttr = r'Bearer'
+            bearer = re.search(r'Bearer', token)
+            jwt_token = re.search(r'(?!Bearer )\w+\d.+', token)
 
-            bearer = token.split(" ")
+            if bearer is not None:
+                bearer = bearer.group()
+
+            if jwt_token is not None:
+                jwt_token = jwt_token.group()
 
         if token is None or bearer != 'Bearer' or AuthServices.decode_token(jwt_token) is None:
-                return Response(dict(message="Not Authorized"), status=status.HTTP_401_UNAUTHORIZED)
+                return Response(dict(message="Not Authorized",
+                                     status_code=status.HTTP_401_UNAUTHORIZED),
+                                status=status.HTTP_401_UNAUTHORIZED)
 
         return function(*args, **kwargs)
 
