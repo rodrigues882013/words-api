@@ -8,8 +8,8 @@ from services import WordService, AuthServices
 from words.models import Word
 
 
-BEARER_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c" \
-               "2VyIjo0fQ.LvcApqSzzNsBJsUGretNjAHj_a6tpfpOEAE0PJHaH1g"
+# BEARER_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c" \
+#                "2VyIjo0fQ.LvcApqSzzNsBJsUGretNjAHj_a6tpfpOEAE0PJHaH1g"
 
 
 class WordServiceTestCase(TestCase):
@@ -114,7 +114,15 @@ class WordTestCase(TestCase):
 class WordEndPointTestCase(TestCase):
     def setUp(self):
         self.client = Client()
-        self.auth_header = dict(HTTP_AUTHORIZATION=BEARER_TOKEN)
+        user = User.objects.create_user('user_test', 'test@gmail.com', "useruser")
+        user.save()
+
+        user = User.objects.get(username='user_test')
+        token = AuthServices.verify_user(username=user.username,
+                                         email=user.email,
+                                         password=user.password)
+
+        self.auth_header = dict(HTTP_AUTHORIZATION="Bearer " + token)
         Word.objects.create(word="banana")
         Word.objects.create(word="cat")
 
@@ -122,9 +130,10 @@ class WordEndPointTestCase(TestCase):
         response = self.client.get('/api/v1/words/', **self.auth_header)
 
         content = json.loads(response.content)
-        words = [dict(word='banana', id=1), dict(word='cat', id=2)]
 
+        words = [dict(word='banana', id=1), dict(word='cat', id=2)]
         list_words = content.get('results')
+
         self.assertIsNotNone(list_words)
         self.assertNotEqual(len(list_words), 0)
         self.assertEqual(list_words, words)
@@ -158,12 +167,12 @@ class WordEndPointTestCase(TestCase):
 class AuthTestCase(TestCase):
 
     def setUp(self):
-        bearer_token = BEARER_TOKEN
         user = User.objects.create_user('user_test', 'test@gmail.com', "useruser")
         user.save()
 
     def test_create_token(self):
-        token = AuthServices._create_token(1)
+        user = User.objects.get(username='user_test')
+        token = AuthServices.create_token(user)
         claims = jwt.decode(token, 'secret', algorithms=['HS256'])
 
         self.assertEqual(claims.get('user_id'), 1)
@@ -171,22 +180,21 @@ class AuthTestCase(TestCase):
             jwt.decode(None, 'secret', algorithms=['HS256'])
 
     def test_decode_token(self):
-        token = AuthServices._create_token(1)
-        user_id = AuthServices.decode_token(token)
-        self.assertEqual(user_id, 1)
+        result = AuthServices.decode_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1"
+                                            "c2VyX2lkIjoxLCJleHAiOjE0ODgxMjQxMzd9.jxpHa1t"
+                                            "Dm39naVuvymtk_NtOZhiB9vwhUIS0r-pl_uk")
+        # Toke gave was expired
+        self.assertEqual(result, False)
 
-        user_id = AuthServices.decode_token(None)
-        self.assertIsNone(user_id)
-
-    def test_auth(self):
+    def test_token_manager(self):
         user = User.objects.get(username='user_test')
-        token = AuthServices.auth(user)
-        user_id = AuthServices.decode_token(token)
-        self.assertEqual(user_id, 1)
+        token = AuthServices.token_manager(user)
 
-        token = AuthServices.auth(None)
-        user_id = AuthServices.decode_token(token)
-        self.assertIsNone(user_id)
+        claims = jwt.decode(token, 'secret', algorithms=['HS256'])
+
+        self.assertEqual(claims.get('user_id'), 1)
+        with self.assertRaises(jwt.DecodeError):
+            jwt.decode(None, 'secret', algorithms=['HS256'])
 
     def test_user_verification(self):
 
