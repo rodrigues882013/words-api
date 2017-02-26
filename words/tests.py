@@ -89,6 +89,9 @@ class WordServiceTestCase(TestCase):
         result = WordService.compute_distance("breach", "search")
         self.assertEqual(result, 3)
 
+        result = WordService.compute_distance("felipe", "neide")
+        self.assertEqual(result, 3)
+
         result = WordService.compute_distance(self.longest_word_of_english, self.other_long_word)
         self.assertEqual(result, 2682)
 
@@ -97,6 +100,52 @@ class WordServiceTestCase(TestCase):
         # is not usable in practical approach
         with self.assertRaises(RuntimeError):
             WordService.recursive_version(self.longest_word_of_english, self.other_long_word)
+
+    def test_if_words_are_similars(self):
+
+        is_similar = WordService.is_similar("abacate", "banana")
+        self.assertFalse(is_similar, False)
+
+        is_similar = WordService.is_similar("ovo", "uva")
+        self.assertTrue(is_similar, True)
+
+        is_similar = WordService.is_similar("ovo", "uva", threshold=1)
+        self.assertFalse(is_similar, False)
+
+        is_similar = WordService.is_similar("ovo", "ovo", threshold=0)
+        self.assertTrue(is_similar, True)
+
+        is_similar = WordService.is_similar(self.longest_word_of_english, "ovo")
+        self.assertFalse(is_similar, False)
+
+        is_similar = WordService.is_similar("abacate", "banana", threshold=4)
+        self.assertTrue(is_similar, True)
+
+    def test_filter_words(self):
+
+        Word(word="abacate").save()
+        Word(word="banana").save()
+        Word(word="bola").save()
+        Word(word="carro").save()
+        Word(word="melancia").save()
+        Word(word="abobora").save()
+        Word(word="peixe").save()
+
+        words = WordService.filter_words(keyword='abacate', threshold=4)
+        self.assertTrue(len(words))
+        self.assertEqual(len(words), 2)
+
+        words = WordService.filter_words(keyword='', threshold=0)
+        self.assertEqual(len(words), 7)
+
+        words = WordService.filter_words(keyword='')
+        self.assertEqual(len(words), 7)
+
+        words = WordService.filter_words(keyword='peixe', threshold=3)
+        self.assertEqual(len(words), 1)
+
+        words = WordService.filter_words(keyword='peixe', threshold=5)
+        self.assertEqual(len(words), 3)
 
 
 class WordTestCase(TestCase):

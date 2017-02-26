@@ -1,3 +1,4 @@
+import json
 from json import loads
 
 from rest_framework import generics
@@ -39,6 +40,20 @@ class WordList(mixins.ListModelMixin,
 
     @auth_jwt
     def get(self, request, *args, **kwargs):
+
+        keyword = ''
+        threshold = 3
+
+        if request.GET:
+
+            if 'key' in request.GET:
+                keyword = request.GET['key']
+            if 't' in request.GET:
+                threshold = request.GET['t']
+
+            self.queryset = WordService.filter_words(keyword=keyword,
+                                                     threshold=threshold)
+
         return self.list(request, *args, **kwargs)
 
     @auth_jwt

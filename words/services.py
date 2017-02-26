@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout
 
-from words.models import Token
+from words.models import Token, Word
 from words.serializers import WordSerializer
 
 
@@ -71,13 +71,31 @@ class WordService(object):
                    WordService.recursive_version(w1[1:], w2) + 1,
                    WordService.recursive_version(w1, w2[1:]) + 1)
 
+    @staticmethod
+    def is_similar(w1, w2, threshold=3):
+        return WordService.compute_distance(w1, w2) <= threshold
+
+    @staticmethod
+    def filter_words(**kwargs):
+
+        keyword = kwargs.get('keyword')
+        threshold = kwargs.get('threshold') if kwargs.get('threshold') is not None else 3
+        words = list()
+
+        _filter = lambda x: WordService.is_similar(keyword, x, threshold)
+        words_set = [w if _filter(w.get_word()) else None for w in Word.objects.all()]
+        filter(lambda x: words.append(x) if x is not None else False, words_set)
+
+        return words
+
 
 class AuthServices(object):
+
     @staticmethod
     def create_token(user):
 
         token = jwt.encode(dict(user_id=user.id,
-                                exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=10)),
+                                exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=5000)),
                            'secret', algorithm='HS256')
         token_obj = Token(token=token, user=user)
         token_obj.save()
