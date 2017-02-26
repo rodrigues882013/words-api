@@ -95,7 +95,7 @@ class AuthServices(object):
     def create_token(user):
 
         token = jwt.encode(dict(user_id=user.id,
-                                exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=5000)),
+                                exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=15)),
                            'secret', algorithm='HS256')
         token_obj = Token(token=token, user=user)
         token_obj.save()
