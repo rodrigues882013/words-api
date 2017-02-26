@@ -1,9 +1,15 @@
 import json
 
+import jwt
+from django.contrib.auth.models import User
 from django.test import TestCase, Client
 
-from services import WordService
+from services import WordService, AuthServices
 from words.models import Word
+
+
+BEARER_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c" \
+               "2VyIjo0fQ.LvcApqSzzNsBJsUGretNjAHj_a6tpfpOEAE0PJHaH1g"
 
 
 class WordServiceTestCase(TestCase):
@@ -108,8 +114,7 @@ class WordTestCase(TestCase):
 class WordEndPointTestCase(TestCase):
     def setUp(self):
         self.client = Client()
-        self.auth_header = dict(HTTP_AUTHORIZATION="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjo0"
-                                                   "fQ.LvcApqSzzNsBJsUGretNjAHj_a6tpfpOEAE0PJHaH1g")
+        self.auth_header = dict(HTTP_AUTHORIZATION=BEARER_TOKEN)
         Word.objects.create(word="banana")
         Word.objects.create(word="cat")
 
@@ -148,3 +153,57 @@ class WordEndPointTestCase(TestCase):
 
         obj = json.loads(response.content)
         self.assertEqual(obj.get('distance'), 4)
+
+
+class AuthTestCase(TestCase):
+
+    def setUp(self):
+        bearer_token = BEARER_TOKEN
+        user = User.objects.create_user('user_test', 'test@gmail.com', "useruser")
+        user.save()
+
+    def test_create_token(self):
+        token = AuthServices._create_token(1)
+        claims = jwt.decode(token, 'secret', algorithms=['HS256'])
+
+        self.assertEqual(claims.get('user_id'), 1)
+        with self.assertRaises(jwt.DecodeError):
+            jwt.decode(None, 'secret', algorithms=['HS256'])
+
+    def test_decode_token(self):
+        token = AuthServices._create_token(1)
+        user_id = AuthServices.decode_token(token)
+        self.assertEqual(user_id, 1)
+
+        user_id = AuthServices.decode_token(None)
+        self.assertIsNone(user_id)
+
+    def test_auth(self):
+        user = User.objects.get(username='user_test')
+        token = AuthServices.auth(user)
+        user_id = AuthServices.decode_token(token)
+        self.assertEqual(user_id, 1)
+
+        token = AuthServices.auth(None)
+        user_id = AuthServices.decode_token(token)
+        self.assertIsNone(user_id)
+
+    def test_user_verification(self):
+
+        token = AuthServices.verify_user(username='user_test',
+                                         email='test@gmail.com',
+                                         password='useruser')
+        user_id = AuthServices.decode_token(token)
+        self.assertEqual(user_id, 1)
+
+        token = AuthServices.verify_user(username='user_test_2',
+                                         email='test2@gmail.com',
+                                         password='useruser')
+
+        user_id = AuthServices.decode_token(token)
+        self.assertEqual(user_id, 2)
+
+
+
+
+

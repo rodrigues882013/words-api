@@ -1,3 +1,6 @@
 from django.contrib import admin
+from models import Word, Token
 
-# Register your models here.
+
+admin.site.register(Word)
+admin.site.register(Token)

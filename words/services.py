@@ -1,13 +1,17 @@
 import json
 import re
+
+import datetime
 import jwt
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout
 
+from words.models import Token
+from words.serializers import WordSerializer
 
 
 class WordService(object):
@@ -69,32 +73,52 @@ class WordService(object):
 
 
 class AuthServices(object):
-
     @staticmethod
-    def _create_token(user_id):
-        return jwt.encode(dict(user=user_id), 'secret', algorithm='HS256')
+    def create_token(user):
+
+        token = jwt.encode(dict(user_id=user.id,
+                                exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=10)),
+                           'secret', algorithm='HS256')
+        token_obj = Token(token=token, user=user)
+        token_obj.save()
+
+        return token_obj.get_token()
 
     @staticmethod
     def decode_token(token):
-        user_id = None
+        result = None
 
         try:
             claims = jwt.decode(token, 'secret', algorithms=['HS256'])
-            user_id = claims.get('user')
+            # The result is own user id
+            result = claims.get('user_id')
 
         except jwt.DecodeError:
             pass
 
-        return user_id
+        except jwt.ExpiredSignatureError:
+            result = False
+
+        return result
 
     @staticmethod
-    def auth(user):
-        authenticate(username=user.username, password=user.password)
+    def is_valid(token):
+        return AuthServices.decode_token(token)
 
-        if user.is_authenticated():
-            token = AuthServices._create_token(user.id)
+    @staticmethod
+    def token_manager(user):
+        token = None
+
+        try:
+            token = Token.objects.get(user=user.id)
+        except Token.DoesNotExist:
+            pass
+
+        if token is not None and AuthServices.is_valid(token):
+            token = token.get_token()
+
         else:
-            token = False
+            token = AuthServices.create_token(user)
 
         return token
 
@@ -102,21 +126,23 @@ class AuthServices(object):
     def verify_user(**kwargs):
 
         try:
-            user = User.objects.get(username=kwargs['username'], email=kwargs['email'])
+            user = User.objects.get(username=kwargs['username'],
+                                    email=kwargs['email'])
         except User.DoesNotExist:
             user = None
 
-        if user is not None:
-            token = AuthServices.auth(user)
-
-        else:
-            user = User.objects.create_user(kwargs['username'], kwargs['email'], kwargs['password'])
+        if user is None:
+            user = User.objects.create_user(kwargs['username'],
+                                            kwargs['email'],
+                                            kwargs['password'])
             user.save()
-            token = AuthServices.auth(user)
+
+        token = AuthServices.token_manager(user)
 
         return token
 
 
+# Decorators
 def auth_jwt(function):
     def wrapped(*args, **kwargs):
         request = args[1]
@@ -140,11 +166,20 @@ def auth_jwt(function):
             if jwt_token is not None:
                 jwt_token = jwt_token.group()
 
-        if token is None or bearer != 'Bearer' or AuthServices.decode_token(jwt_token) is None:
-                return Response(dict(message="Not Authorized",
-                                     status_code=status.HTTP_401_UNAUTHORIZED),
-                                status=status.HTTP_401_UNAUTHORIZED)
+        is_valid = AuthServices.is_valid(jwt_token)
+        if token is None or bearer != 'Bearer' or is_valid is False or is_valid is None:
+            message = dict(message="Not Authorized",
+                           status_code=status.HTTP_401_UNAUTHORIZED),
+
+            if not AuthServices.is_valid(jwt_token):
+                message = dict(message="Token Expired, request a new token",
+                               status_code=status.HTTP_401_UNAUTHORIZED)
+
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
 
         return function(*args, **kwargs)
 
     return wrapped
+
+
+
