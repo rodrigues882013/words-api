@@ -1,4 +1,5 @@
 Django==1.10.5
+PyJWT==1.4.2
+django-cors-headers==2.0.2
 djangorestframework==3.5.4
 freeze==1.0.10
-

@@ -1,3 +1,13 @@
+import json
+import re
+import jwt
+from django.shortcuts import render
+from rest_framework import status
+from rest_framework.response import Response
+
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+
 
 
 class WordService(object):
@@ -56,3 +66,73 @@ class WordService(object):
         return min(WordService.recursive_version(w1[1:], w2[1:]) + (w1[0] != w2[0]),
                    WordService.recursive_version(w1[1:], w2) + 1,
                    WordService.recursive_version(w1, w2[1:]) + 1)
+
+
+class AuthServices(object):
+
+    @staticmethod
+    def _create_token(user_id):
+        return jwt.encode(dict(user=user_id), 'secret', algorithm='HS256')
+
+    @staticmethod
+    def decode_token(token):
+        user = None
+        if token is not None:
+            claims = jwt.decode(token, 'secret', algorithms=['HS256'])
+            user = claims.get('user')
+
+        return user
+
+    @staticmethod
+    def auth(user):
+        authenticate(username=user.username, password=user.password)
+
+        if user.is_authenticated():
+            token = AuthServices._create_token(user.id)
+        else:
+            token = False
+
+        return token
+
+    @staticmethod
+    def verify_user(**kwargs):
+
+        try:
+            user = User.objects.get(username=kwargs['username'], email=kwargs['email'])
+        except User.DoesNotExist:
+            user = None
+
+        if user is not None:
+            token = AuthServices.auth(user)
+
+        else:
+            user = User.objects.create_user(kwargs['username'], kwargs['email'], kwargs['password'])
+            user.save()
+            token = AuthServices.auth(user)
+
+        return token
+
+
+def auth_jwt(function):
+    def wrapped(*args, **kwargs):
+        request = args[1]
+
+        token = None
+        bearer = None
+
+        if request.META.get('HTTP_AUTHORIZATION') is not None:
+            token = request.META.get('HTTP_AUTHORIZATION')
+        elif request.META.get('AUTHORIZATION') is not None:
+            token = request.META.get('AUTHORIZATION')
+
+        if token is not None:
+            pttr = r'Bearer'
+
+            bearer = token.split(" ")
+
+        if token is None or bearer != 'Bearer' or AuthServices.decode_token(jwt_token) is None:
+                return Response(dict(message="Not Authorized"), status=status.HTTP_401_UNAUTHORIZED)
+
+        return function(*args, **kwargs)
+
+    return wrapped

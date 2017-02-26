@@ -1,3 +1,5 @@
+from json import loads
+
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework import status
@@ -6,10 +8,7 @@ from rest_framework.views import APIView
 
 from words.models import Word
 from words.serializers import WordSerializer
-from words.services import WordService
-from words.constants import Constants
-
-from json import loads
+from words.services import WordService, AuthServices, auth_jwt
 
 
 class WordDetail(mixins.RetrieveModelMixin,
@@ -20,6 +19,7 @@ class WordDetail(mixins.RetrieveModelMixin,
     queryset = Word.objects.all()
     serializer_class = WordSerializer
 
+    @auth_jwt
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
@@ -37,15 +37,30 @@ class WordList(mixins.ListModelMixin,
     queryset = Word.objects.all()
     serializer_class = WordSerializer
 
+    @auth_jwt
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
+    @auth_jwt
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
 
+class RequestAccess(APIView):
+
+    def post(self, request, format=None):
+        credentials = loads(request.body)
+
+        token = AuthServices.verify_user(username=credentials.get('username'),
+                                         password=credentials.get('password'),
+                                         email=credentials.get('email'))
+
+        return Response(dict(token=token), status=status.HTTP_201_CREATED)
+
+
 class Distance(APIView):
 
+    @auth_jwt
     def post(self, request, format=None):
         words = loads(request.body)
         data = dict()
