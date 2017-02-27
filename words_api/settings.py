@@ -30,7 +30,8 @@ SECRET_KEY = 'n8($2ycbm(tuysmub&=*@j68q3#yrw8s9&r6-wv6l=a59m39@)'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Allow all host headers
+ALLOWED_HOSTS = ['*']
 
 # Logger configuration
 
@@ -137,7 +138,18 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Manage static files
+
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT, 'static'),
+)
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
 
 BASE_API_URL = 'api/v1/'
 
@@ -154,5 +166,4 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/api/v1/.*$'
 
-# Allow all host headers
-ALLOWED_HOSTS = ['*']
+
