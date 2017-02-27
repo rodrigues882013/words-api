@@ -61,7 +61,9 @@ If everthing is correct your should see the response like this:
 			"token":"some token"
 		}
        
-Now see the documentation and interact with API
+Now see the documentation and interact with API, append this entry in eache request:
+
+        "Authorization": "Bearer <your_token>"
 
 
 ## Tests
