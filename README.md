@@ -11,25 +11,25 @@ In local environment the api is works without requesting access token for facili
 
 1. Clone repository
 
-       $ git clone https://github.com/rodrigues882013/words-api.git
-       $ cd words-api/
+		$ git clone https://github.com/rodrigues882013/words-api.git
+		$ cd words-api/
  
 2. Install Virtualenv
       
-       $ curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
-       $ tar xvfz virtualenv-1.9.tar.gz
-       $ cd virtualenv-1.9
-       $ python virtualenv.py /path/to/virtualenv/env
+		$ curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
+		$ tar xvfz virtualenv-1.9.tar.gz
+		$ cd virtualenv-1.9
+		$ python virtualenv.py /path/to/virtualenv/env
 
 3. Switch to new virtualenv created and install requirements
 
-       $ source /path/to/virtualenv/env/bin/active
-       $ (env) pip install -r requirements.txt
+		$ source /path/to/virtualenv/env/bin/active
+		$ (env) pip install -r requirements.txt
 
 4. Create a symbolic link to to offline documentation of api
 
-       $ (env) ln -s swagger.local.json swagger.json (local)
-       $ (env) ln -s swagger.production.json swagger.json (production)
+		$ (env) ln -s swagger.local.json swagger.json (local)
+		$ (env) ln -s swagger.production.json swagger.json (production)
 
 or to production environment
 
@@ -37,22 +37,23 @@ or to production environment
        
 5. Running migrations
 
-       $ (env) python manage.py makemigrations
-       $ (env) python manage.py migrate
+		$ (env) python manage.py makemigrations
+		$ (env) python manage.py migrate
        
 6. Running the application
 
-       $ (env) python manage.py runserver
+		$ (env) python manage.py runserver
+
 By default django startup application in port 8000
 
 7. Get access token for interacting with api, send credentials to endpoint bellow:
 
-       [GET] http://localhost:8000/api/v1/auth/request_access/
-       {
-            "username": "someuser",
-            "password: "yourpassword",
-            "email": "youremail"
-       }
+		[GET] http://localhost:8000/api/v1/auth/request_access/
+		{
+			"username": "someuser",
+			"password: "yourpassword",
+			"email": "youremail"
+		}
 
 If everthing is correct your should see the response like this:
 
