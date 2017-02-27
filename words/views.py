@@ -44,19 +44,19 @@ class WordDetail(mixins.RetrieveModelMixin,
     queryset = Word.objects.all()
     serializer_class = WordSerializer
 
-    @auth_jwt
+    # @auth_jwt
     def get(self, request, *args, **kwargs):
         logger.info("Retrieve word")
         logger.debug("Retrieve word with id: %s", kwargs.get('pk'))
         return self.retrieve(request, *args, **kwargs)
 
-    @auth_jwt
+    # @auth_jwt
     def put(self, request, *args, **kwargs):
         logger.info("Update word")
         logger.debug("Update word with id: %s", kwargs.get('pk'))
         return self.update(request, *args, **kwargs)
 
-    @auth_jwt
+    # @auth_jwt
     def delete(self, request, *args, **kwargs):
         logger.info("Delete word")
         logger.debug("Delete word with id: %s", kwargs.get('pk'))
@@ -69,7 +69,7 @@ class WordList(mixins.ListModelMixin,
     queryset = Word.objects.all()
     serializer_class = WordSerializer
 
-    @auth_jwt
+    # @auth_jwt
     def get(self, request, *args, **kwargs):
         logger.info("Listing resource")
         keyword = ''
@@ -87,7 +87,7 @@ class WordList(mixins.ListModelMixin,
 
         return self.list(request, *args, **kwargs)
 
-    @auth_jwt
+    # @auth_jwt
     def post(self, request, *args, **kwargs):
         try:
             logger.debug("Creating the word: %s", json.loads(request.body).get("word"))
@@ -131,7 +131,7 @@ class RequestAccess(APIView):
 
 class WordDistance(APIView):
 
-    @auth_jwt
+    # @auth_jwt
     def post(self, request, format=None):
         data = dict()
 
