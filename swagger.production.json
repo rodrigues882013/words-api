@@ -26,25 +26,18 @@
         ],
         "parameters": [
           {
-            "name": "page",
+            "name": "keyword",
             "in": "query",
             "required": false,
             "type": "string",
-            "description": "A number of page in resouces"
+            "description": "A keyword to search words similar in resources"
           },
           {
-            "name": "key",
+            "name": "t",
             "in": "query",
             "required": false,
             "type": "string",
-            "description": "A keyword to search words similars in resources"
-          },
-          {
-            "name": "threshold",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "description": "A threshold to considerer in compare two words"
+            "description": "A threshold to consider in compare two words, (t=3 default)"
           }
         ],
         "responses": {
