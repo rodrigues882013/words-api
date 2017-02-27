@@ -58,8 +58,8 @@ By default django startup application in port 8000
 If everthing is correct your should see the response like this:
 
 		{
-            		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJleHAiOjE0ODgyMDM5ODh9.I4e1RE3B3GP7ptE_5ZBPMU_d-ulXNBRW5JXGFbGZvOg",
-        	}
+			"token":"some token"
+		}
        
 Now see the documentation and interact with API
 
@@ -68,14 +68,14 @@ Now see the documentation and interact with API
 
 For running tests running:
 
-	$ python manage.py test
+		$ python manage.py test
        
 ## Live demo
 
 You can get your token in endpoint bellow:
 
-	https://simple-words-api.herokuapp.com/api/v1/auth/request_access/
+		https://simple-words-api.herokuapp.com/api/v1/auth/request_access/
       
 The complete documentation can be see in:
 
-	http://localhost:8000/api/v1/docs/
+		http://localhost:8000/api/v1/docs/
