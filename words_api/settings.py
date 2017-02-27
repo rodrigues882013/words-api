@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import logging
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +27,21 @@ SECRET_KEY = 'n8($2ycbm(tuysmub&=*@j68q3#yrw8s9&r6-wv6l=a59m39@)'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+# Logger configuration
+
+if DEBUG:
+    # will output to your console
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - [%(levelname)s] - %(message)s',
+    )
+else:
+    # will output to logging file
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - [%(levelname)s] - %(message)s',
+    )
 
 # Application definition
 
@@ -112,16 +129,19 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
 STATIC_URL = '/static/'
 
+BASE_API_URL = 'api/v1/'
+
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 10,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/api/v1/.*$'
-
-

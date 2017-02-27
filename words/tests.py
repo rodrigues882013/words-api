@@ -1,15 +1,13 @@
+# coding=utf-8
 import json
 
 import jwt
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.test import TestCase, Client
 
 from services import WordService, AuthServices
 from words.models import Word
-
-
-# BEARER_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c" \
-#                "2VyIjo0fQ.LvcApqSzzNsBJsUGretNjAHj_a6tpfpOEAE0PJHaH1g"
 
 
 class WordServiceTestCase(TestCase):
@@ -102,7 +100,6 @@ class WordServiceTestCase(TestCase):
             WordService.recursive_version(self.longest_word_of_english, self.other_long_word)
 
     def test_if_words_are_similars(self):
-
         is_similar = WordService.is_similar("abacate", "banana")
         self.assertFalse(is_similar, False)
 
@@ -122,7 +119,6 @@ class WordServiceTestCase(TestCase):
         self.assertTrue(is_similar, True)
 
     def test_filter_words(self):
-
         Word(word="abacate").save()
         Word(word="banana").save()
         Word(word="bola").save()
@@ -180,8 +176,8 @@ class WordEndPointTestCase(TestCase):
 
         content = json.loads(response.content)
 
-        words = [dict(word='banana', id=1), dict(word='cat', id=2)]
-        list_words = content.get('results')
+        words = [dict(word='banana'), dict(word='cat')]
+        list_words = content
 
         self.assertIsNotNone(list_words)
         self.assertNotEqual(len(list_words), 0)
@@ -203,18 +199,79 @@ class WordEndPointTestCase(TestCase):
 
     def test_calcule_distance(self):
         response = self.client.post(path='/api/v1/words/distance/',
-                                    data=json.dumps(dict(word1='abacate', word2='banana')),
+                                    data=json.dumps(dict(word1='jacaré', word2='onça')),
                                     content_type='application/json',
                                     **self.auth_header)
 
         self.assertEqual(response.status_code, 201)
 
         obj = json.loads(response.content)
-        self.assertEqual(obj.get('distance'), 4)
+        self.assertEqual(obj.get('distance'), 5)
+
+    def test_empty_words_creation(self):
+        response = self.client.post(path='/api/v1/words/',
+                                    data=json.dumps(dict(word='')),
+                                    content_type='application/json',
+                                    **self.auth_header)
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_conflict_between_resources(self):
+        response = self.client.post(path='/api/v1/words/',
+                                    data=json.dumps(dict(word='cat')),
+                                    content_type='application/json',
+                                    **self.auth_header)
+
+        self.assertEqual(response.status_code, 409)
+
+    def test_bad_format_in_body_request(self):
+        response = self.client.post(path='/api/v1/words/',
+                                    data=json.dumps(dict()),
+                                    content_type='application/json',
+                                    **self.auth_header)
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_calcule_distance_between_empty(self):
+        response1 = self.client.post(path='/api/v1/words/distance/',
+                                     data=json.dumps(dict(word1="", word2="")),
+                                     content_type='application/json',
+                                     **self.auth_header)
+
+        response2 = self.client.post(path='/api/v1/words/distance/',
+                                     data=json.dumps(dict(word1="bola", word2="")),
+                                     content_type='application/json',
+                                     **self.auth_header)
+
+        response3 = self.client.post(path='/api/v1/words/distance/',
+                                     data=json.dumps(dict(word1="", word2="bola")),
+                                     content_type='application/json',
+                                     **self.auth_header)
+
+        response4 = self.client.post(path='/api/v1/words/distance/',
+                                     data=json.dumps(dict(word1=" ", word2=" ")),
+                                     content_type='application/json',
+                                     **self.auth_header)
+
+        response5 = self.client.post(path='/api/v1/words/distance/',
+                                     data=json.dumps(dict(word1=" ", word2="bola")),
+                                     content_type='application/json',
+                                     **self.auth_header)
+
+        response6 = self.client.post(path='/api/v1/words/distance/',
+                                     data=json.dumps(dict(word1="bola", word2=" ")),
+                                     content_type='application/json',
+                                     **self.auth_header)
+
+        self.assertEqual(response1.status_code, 400)
+        self.assertEqual(response2.status_code, 400)
+        self.assertEqual(response3.status_code, 400)
+        self.assertEqual(response4.status_code, 400)
+        self.assertEqual(response5.status_code, 400)
+        self.assertEqual(response6.status_code, 400)
 
 
 class AuthTestCase(TestCase):
-
     def setUp(self):
         user = User.objects.create_user('user_test', 'test@gmail.com', "useruser")
         user.save()
@@ -230,8 +287,8 @@ class AuthTestCase(TestCase):
 
     def test_decode_token(self):
         result = AuthServices.decode_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1"
-                                            "c2VyX2lkIjoxLCJleHAiOjE0ODgxMjQxMzd9.jxpHa1t"
-                                            "Dm39naVuvymtk_NtOZhiB9vwhUIS0r-pl_uk")
+                                           "c2VyX2lkIjoxLCJleHAiOjE0ODgxMjQxMzd9.jxpHa1t"
+                                           "Dm39naVuvymtk_NtOZhiB9vwhUIS0r-pl_uk")
         # Toke gave was expired
         self.assertEqual(result, False)
 
@@ -246,7 +303,6 @@ class AuthTestCase(TestCase):
             jwt.decode(None, 'secret', algorithms=['HS256'])
 
     def test_user_verification(self):
-
         token = AuthServices.verify_user(username='user_test',
                                          email='test@gmail.com',
                                          password='useruser')
@@ -259,8 +315,3 @@ class AuthTestCase(TestCase):
 
         user_id = AuthServices.decode_token(token)
         self.assertEqual(user_id, 2)
-
-
-
-
-

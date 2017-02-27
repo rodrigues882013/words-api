@@ -1,1 +1,2 @@
-# words-api
+# Simple word similarity api
+

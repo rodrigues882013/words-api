@@ -1,20 +1,24 @@
-import json
-import re
-
 import datetime
+import logging
+import re
 import jwt
-from django.shortcuts import render
+
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, logout
-
 from words.models import Token, Word
-from words.serializers import WordSerializer
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 class WordService(object):
+
+    @staticmethod
+    def is_empty(word):
+        return word == "" or word == " " or word is None
+
     @staticmethod
     def min(v1, v2, v3):
         return min(min(v1, v2), v3)
@@ -26,6 +30,7 @@ class WordService(object):
             return range(start, end + 1)
 
         if w1 is None or w2 is None:
+            logger.error("Word 1  or Word 2 is not a valid value")
             raise ValueError("Word 1  or Word 2 is not a valid value")
 
         w1, w2 = w1.lower(), w2.lower()
@@ -58,6 +63,7 @@ class WordService(object):
     def recursive_version(w1, w2):
 
         if w1 is None or w2 is None:
+            logger.error("Word 1  or Word 2 is not a valid value")
             raise ValueError("Word 1  or Word 2 is not a valid value")
 
         if not w1:
@@ -73,11 +79,12 @@ class WordService(object):
 
     @staticmethod
     def is_similar(w1, w2, threshold=3):
+        logger.info("Testing if worlds are similar")
         return WordService.compute_distance(w1, w2) <= threshold
 
     @staticmethod
     def filter_words(**kwargs):
-
+        logger.info("Filtering the word set")
         keyword = kwargs.get('keyword')
         threshold = kwargs.get('threshold') if kwargs.get('threshold') is not None else 3
         words = list()
@@ -93,7 +100,7 @@ class AuthServices(object):
 
     @staticmethod
     def create_token(user):
-
+        logger.info("Creating access token")
         token = jwt.encode(dict(user_id=user.id,
                                 exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=15)),
                            'secret', algorithm='HS256')
@@ -142,14 +149,16 @@ class AuthServices(object):
 
     @staticmethod
     def verify_user(**kwargs):
-
+        logger.info("Verifying if users and grant access to api")
         try:
             user = User.objects.get(username=kwargs['username'],
                                     email=kwargs['email'])
         except User.DoesNotExist:
+            logger.info("User yet haven't access to api, the user will be created")
             user = None
 
         if user is None:
+            logger.info("Creating user")
             user = User.objects.create_user(kwargs['username'],
                                             kwargs['email'],
                                             kwargs['password'])
