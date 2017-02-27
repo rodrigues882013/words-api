@@ -2,9 +2,12 @@
 
 import json
 import logging
+import os
 from json import loads
 
 from django.db import IntegrityError
+from django.http import HttpResponse
+from django.shortcuts import render
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework import status
@@ -16,7 +19,22 @@ from words.serializers import WordSerializer
 from words.services import WordService, AuthServices, auth_jwt
 
 # Get an instance of a logger
+from words_api.settings import PROJECT_ROOT
+
 logger = logging.getLogger(__name__)
+
+
+def index(request):
+    return render(request, 'words/index.html')
+
+
+def api_docs(request):
+    data = None
+
+    with open(os.path.join(PROJECT_ROOT, '../swagger.json')) as data_file:
+        data = json.load(data_file)
+
+    return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 class WordDetail(mixins.RetrieveModelMixin,
