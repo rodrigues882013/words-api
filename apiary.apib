@@ -1,0 +1,192 @@
+FORMAT: 1A
+HOST: https://simple-words-api.herokuapp.com
+
+# Word Similarities
+
+Simple API that allow users compute distance between two words, the api too allow basic CRUD operations over  words.
+
+## Words Collection [/api/v1/words/{?page,key,threshold}]
+
+### List words [GET]
+
++ Parameters
+    + page (optional) - A number of page in resouces
+    + key (optional) - A keyword to search words similars in resources
+    + threshold (optional) - A threshold to considerer in compare two words
+    
++ Request 
+
+    + Headers
+        
+        Authorization: "Bearer <your token>"
+        
+
++ Response 200 (application/json)
+
+        [
+            {
+                "count": 3,
+                "next": null,
+                "previous": null
+                "result": [
+                    {
+                        "id": 1,
+                        "words": "python"
+                    }, 
+                    {
+                        "id": 2,
+                        "words": "java"
+                    }, 
+                    {
+                        "id": 3,
+                        "words": "jython"
+                    }
+                ]
+            }
+        ]
+        
+### Create a new word [POST]
+
++ Request (application/json)
+
+    + Headers
+        
+        Authorization: "Bearer <your token>"
+    
+    + Body
+
+        {
+            "word": "ruby"
+        }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            Location: /words/4
+
+    + Body
+
+            {
+                "id": 4,
+                "words": "ruby"
+            }
+    
+        
+## Word Resourse [/api/v1/words/{id}]
+### Get a single word [GET]
+
++ Parameters
+    + id - A path variable that is required for a valid URL
+
+
++ Request 
+
+    + Headers
+        
+        Authorization: "Bearer <your token>"
+        
+
++ Response 200 (application/json)
+
+        
+        {
+            "id": 3,
+            "words": "jython"
+        }
+          
+
+        
+### Update a word [PUT]
+
+
++ Request (application/json)
+
+    + Headers
+        
+        Authorization: "Bearer <your token>"
+    
+    + Body
+
+        {
+            "word": "c++"
+        }
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Location: /words/4
+
+    + Body
+
+            {
+                "id": 4,
+                "words": "c++"
+            }
+
+
+### Delete a Word [DELETE]
+
+
++ Request (application/json)
+
+    + Headers
+        
+        Authorization: "Bearer <your token>"
+    
+
++ Response 204 (application/json)
+
+            
+## Distance between two words [/api/v1/words/distance/]
+### Calcule distance between two words [POST]
+
+This action calcule distance between two words, considering the default threshould (t=3)
+
++ Request (application/json)
+
+    + Headers
+        
+        Authorization: "Bearer <your token>"
+    
+    + Body
+
+        {
+            "word_1": "ruby",
+            "word_2": "python"
+        }
+
++ Response 201 (application/json)
+
+    + Body
+
+            {
+                "word_1": "ruby",
+                "word_2": "python"
+                "distance": 6
+            }
+
+
+## Request API access [/api/v1/auth/request_access/]
+### Request access token [POST]
+
+To use api first you need request a access token
+
++ Request (application/json)
+
+        {
+            "username": "yourusername",
+            "passwrod": "password",
+            "email": "youremail"
+        }
+
++ Response 202 (application/json)
+
+
+    + Body
+
+            {
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJleHAiOjE0ODgyMDM5ODh9.I4e1RE3B3GP7ptE_5ZBPMU_d-ulXNBRW5JXGFbGZvOg",
+                
+            }
