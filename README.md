@@ -1,6 +1,6 @@
 # Simple words similarity API
 
-## Requiremnts
+## Requirements
 * python 2.7
 
 ## Important notes
