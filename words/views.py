@@ -77,8 +77,8 @@ class WordList(mixins.ListModelMixin,
 
         if request.GET:
 
-            if 'key' in request.GET:
-                keyword = request.GET['key']
+            if 'keyword' in request.GET:
+                keyword = request.GET['keyword']
             if 't' in request.GET:
                 threshold = request.GET['t']
 

@@ -5,10 +5,10 @@
     "title": "Word Similarities",
     "description": "Simple API to compare similarity between two words"
   },
-  "host": "localhost:8000",
+  "host": "simple-words-api.herokuapp.com",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "consumes": [
     "application/json"
