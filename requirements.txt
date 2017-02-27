@@ -3,5 +3,9 @@ Jinja2==2.9.5
 PyJWT==1.4.2
 django-cors-headers==2.0.2
 djangorestframework==3.5.4
+gunicorn==19.6.0
+psycopg2==2.6.1
+whitenoise==2.0.6
+dj-database-url==0.4.1
 freeze==1.0.10
 

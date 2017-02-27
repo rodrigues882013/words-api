@@ -1,0 +1,8 @@
+{
+  "name": "Simple API",
+  "description": "Simple API to compare similarity between two words",
+  "image": "heroku/python",
+  "repository": "https://github.com/rodrigues882013/words-api",
+  "keywords": ["python", "django" ],
+  "addons": [ "heroku-postgresql" ]
+}
