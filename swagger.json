@@ -1,0 +1,507 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0",
+    "title": "Word Similarities",
+    "description": "Simple API to compare similarity between two words"
+  },
+  "host": "simple-words-api.herokuapp.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/words/": {
+      "get": {
+        "description": "",
+        "operationId": "List words",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "A keyword to search words similar in resources"
+          },
+          {
+            "name": "t",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "A threshold to consider in compare two words, (t=3 default)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-unitTests": [],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "post": {
+        "description": "",
+        "operationId": "Create a new word",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "threshold",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateANewWordRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/CreateANewWordResponse"
+            }
+          }
+        },
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "POST",
+              "uri": "/api/v1/words/",
+              "headers": {
+                "Authorization": "Bearer <your token",
+                "Content-Type": "application/json"
+              },
+              "body": "{    \"word\": \"ruby\"}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "RAW",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {
+                "Authorization": "Bearer <your token",
+                "Content-Type": "application/json",
+                "Location": "/words/4"
+              },
+              "body": "{    \"id\": 4,    \"words\": \"ruby\"}"
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Create a new word1",
+            "x-testDescription": "Testcase for testing endpoint Create a new word"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/api/v1/words/{id}": {
+      "get": {
+        "description": "",
+        "operationId": "Get a single word",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "A path variable that is required for a valid URL"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/GetASingleWordResponse"
+            }
+          }
+        },
+        "x-unitTests": [],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "put": {
+        "description": "",
+        "operationId": "Update a word",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateAWordRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/UpdateAWordResponse"
+            }
+          }
+        },
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/api/v1/words/{id}",
+              "headers": {
+                "Authorization": "Bearer <your token",
+                "Content-Type": "application/json"
+              },
+              "body": "{    \"word\": \"c++\"}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "RAW",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {
+                "Content-Type": "application/json",
+                "Location": "/words/4"
+              },
+              "body": "{    \"id\": 4,    \"words\": \"c++\"}"
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Update a word1",
+            "x-testDescription": "Testcase for testing endpoint Update a word"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "delete": {
+        "description": "",
+        "operationId": "Delete a Word",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "DELETE",
+              "uri": "/api/v1/words/{id}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {
+                "Content-Type": "application/json"
+              }
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Delete a Word1",
+            "x-testDescription": "Testcase for testing endpoint Delete a Word"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/api/v1/words/distance/": {
+      "post": {
+        "description": "This action calcule distance between two words, considering the default threshould (t=3)",
+        "operationId": "Calcule distance between two words",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CalculeDistanceBetweenTwoWordsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "x-unitTests": [],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/api/v1/auth/request_access/": {
+      "post": {
+        "description": "To use api first you need request a access token",
+        "operationId": "Request access token",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RequestAccessTokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/RequestAccessTokenResponse"
+            }
+          }
+        },
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "POST",
+              "uri": "/api/v1/auth/request_access/",
+              "headers": {
+                "Authorization": "Bearer <your token",
+                "Content-Type": "application/json"
+              },
+              "body": "{    \"username\": \"yourusername\",    \"passwrod\": \"password\",    \"email\": \"youremail\"}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "RAW",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": "{    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJleHAiOjE0ODgyMDM5ODh9.I4e1RE3B3GP7ptE_5ZBPMU_d-ulXNBRW5JXGFbGZvOg\",}"
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Request access token1",
+            "x-testDescription": "To use api first you need request a access token"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CreateANewWordRequest": {
+      "title": "Create a new word request",
+      "type": "object",
+      "properties": {
+        "word": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "word"
+      ]
+    },
+    "CreateANewWordResponse": {
+      "title": "Create a new word Response",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "words": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "words"
+      ]
+    },
+    "GetASingleWordResponse": {
+      "title": "Get a single word Response",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "words": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "words"
+      ]
+    },
+    "UpdateAWordRequest": {
+      "title": "Update a word request",
+      "type": "object",
+      "properties": {
+        "word": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "word"
+      ]
+    },
+    "UpdateAWordResponse": {
+      "title": "Update a word Response",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "words": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "words"
+      ]
+    },
+    "CalculeDistanceBetweenTwoWordsRequest": {
+      "title": "Calcule distance between two words request",
+      "type": "object",
+      "properties": {
+        "word_1": {
+          "type": "string"
+        },
+        "word_2": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "word_1",
+        "word_2"
+      ]
+    },
+    "RequestAccessTokenRequest": {
+      "title": "Request access token request",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "username",
+        "password",
+        "email"
+      ]
+    },
+    "RequestAccessTokenResponse": {
+      "title": "Request access token Response",
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token"
+      ]
+    }
+  }
+}
