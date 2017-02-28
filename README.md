@@ -1,6 +1,6 @@
 # Simple words similarity API
 
-## Requiremnts
+## Requirements
 * python 2.7
 
 ## Important notes
@@ -78,6 +78,6 @@ You can get your token in endpoint bellow:
 
 		https://simple-words-api.herokuapp.com/api/v1/auth/request_access/
       
-The complete documentation can be see in:
+The complete documentation can be seen in:
 
 		http://localhost:8000/api/v1/docs/
