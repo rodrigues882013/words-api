@@ -80,4 +80,7 @@ You can get your token in endpoint bellow:
       
 The complete documentation can be seen in:
 
-		http://localhost:8000/api/v1/docs/
+		http://localhost:8000/api/v1/docs/ (Preferably)
+Or
+
+        https://simple-words-api.herokuapp.com/api/v1/docs/
