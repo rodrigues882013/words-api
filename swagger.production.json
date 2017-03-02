@@ -459,16 +459,16 @@
       "title": "Calcule distance between two words request",
       "type": "object",
       "properties": {
-        "word_1": {
+        "word1": {
           "type": "string"
         },
-        "word_2": {
+        "word2": {
           "type": "string"
         }
       },
       "required": [
-        "word_1",
-        "word_2"
+        "word1",
+        "word2"
       ]
     },
     "RequestAccessTokenRequest": {
