@@ -7,6 +7,8 @@
 
 In local environment the api is works without requesting access token for facility but in production is necessary that user follow step 7 and request a access token.
 
+In production the endpoint /words/distance/ in body of request change word_1 and word_2 to word1 and word2.
+
 ## Instructions
 
 1. Clone repository
